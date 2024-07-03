@@ -172,7 +172,7 @@ dependencies = [
 [[package]]
 name = "d3d12"
 version = "0.20.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=f25e07b984ab391628d9568296d5970981d79d8b#f25e07b984ab391628d9568296d5970981d79d8b"
+source = "git+https://github.com/gfx-rs/wgpu?rev=0a76c0fa84e5e8c10c62f0a19fb54b65c0a4f6e2#0a76c0fa84e5e8c10c62f0a19fb54b65c0a4f6e2"
 dependencies = [
  "bitflags 2.6.0",
  "libloading",
@@ -443,7 +443,7 @@ dependencies = [
 [[package]]
 name = "naga"
 version = "0.20.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=f25e07b984ab391628d9568296d5970981d79d8b#f25e07b984ab391628d9568296d5970981d79d8b"
+source = "git+https://github.com/gfx-rs/wgpu?rev=0a76c0fa84e5e8c10c62f0a19fb54b65c0a4f6e2#0a76c0fa84e5e8c10c62f0a19fb54b65c0a4f6e2"
 dependencies = [
  "arrayvec",
  "bit-set",
@@ -777,7 +777,7 @@ dependencies = [
 [[package]]
 name = "wgpu"
 version = "0.20.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=f25e07b984ab391628d9568296d5970981d79d8b#f25e07b984ab391628d9568296d5970981d79d8b"
+source = "git+https://github.com/gfx-rs/wgpu?rev=0a76c0fa84e5e8c10c62f0a19fb54b65c0a4f6e2#0a76c0fa84e5e8c10c62f0a19fb54b65c0a4f6e2"
 dependencies = [
  "arrayvec",
  "cfg_aliases",
@@ -801,7 +801,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core"
 version = "0.20.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=f25e07b984ab391628d9568296d5970981d79d8b#f25e07b984ab391628d9568296d5970981d79d8b"
+source = "git+https://github.com/gfx-rs/wgpu?rev=0a76c0fa84e5e8c10c62f0a19fb54b65c0a4f6e2#0a76c0fa84e5e8c10c62f0a19fb54b65c0a4f6e2"
 dependencies = [
  "arrayvec",
  "bit-vec",
@@ -825,7 +825,7 @@ dependencies = [
 [[package]]
 name = "wgpu-hal"
 version = "0.20.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=f25e07b984ab391628d9568296d5970981d79d8b#f25e07b984ab391628d9568296d5970981d79d8b"
+source = "git+https://github.com/gfx-rs/wgpu?rev=0a76c0fa84e5e8c10c62f0a19fb54b65c0a4f6e2#0a76c0fa84e5e8c10c62f0a19fb54b65c0a4f6e2"
 dependencies = [
  "android_system_properties",
  "arrayvec",
@@ -877,7 +877,7 @@ dependencies = [
 [[package]]
 name = "wgpu-types"
 version = "0.20.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=f25e07b984ab391628d9568296d5970981d79d8b#f25e07b984ab391628d9568296d5970981d79d8b"
+source = "git+https://github.com/gfx-rs/wgpu?rev=0a76c0fa84e5e8c10c62f0a19fb54b65c0a4f6e2#0a76c0fa84e5e8c10c62f0a19fb54b65c0a4f6e2"
 dependencies = [
  "bitflags 2.6.0",
  "js-sys",
