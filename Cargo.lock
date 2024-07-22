@@ -171,8 +171,8 @@ dependencies = [
 
 [[package]]
 name = "d3d12"
-version = "22.0.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=c0e7c1ef945a7dd61c81fb951ea554213811aee0#c0e7c1ef945a7dd61c81fb951ea554213811aee0"
+version = "0.20.0"
+source = "git+https://github.com/gfx-rs/wgpu?rev=4a19ac279c4f81aacedb1d215c884c10fe115275#4a19ac279c4f81aacedb1d215c884c10fe115275"
 dependencies = [
  "bitflags 2.6.0",
  "libloading",
@@ -274,9 +274,9 @@ dependencies = [
 
 [[package]]
 name = "gpu-allocator"
-version = "0.27.0"
+version = "0.26.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c151a2a5ef800297b4e79efa4f4bec035c5f51d5ae587287c9b952bdf734cacd"
+checksum = "fdd4240fc91d3433d5e5b0fc5b67672d771850dc19bbee03c1381e19322803d7"
 dependencies = [
  "log",
  "presser",
@@ -427,9 +427,9 @@ dependencies = [
 
 [[package]]
 name = "metal"
-version = "0.29.0"
+version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ecfd3296f8c56b7c1f6fbac3c71cefa9d78ce009850c45000015f206dc7fa21"
+checksum = "5637e166ea14be6063a3f8ba5ccb9a4159df7d8f6d61c02fc3d480b1f90dcfcb"
 dependencies = [
  "bitflags 2.6.0",
  "block",
@@ -442,13 +442,12 @@ dependencies = [
 
 [[package]]
 name = "naga"
-version = "22.0.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=c0e7c1ef945a7dd61c81fb951ea554213811aee0#c0e7c1ef945a7dd61c81fb951ea554213811aee0"
+version = "0.20.0"
+source = "git+https://github.com/gfx-rs/wgpu?rev=4a19ac279c4f81aacedb1d215c884c10fe115275#4a19ac279c4f81aacedb1d215c884c10fe115275"
 dependencies = [
  "arrayvec",
  "bit-set",
  "bitflags 2.6.0",
- "cfg_aliases",
  "codespan-reporting",
  "hexf-parse",
  "indexmap",
@@ -777,8 +776,8 @@ dependencies = [
 
 [[package]]
 name = "wgpu"
-version = "22.0.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=c0e7c1ef945a7dd61c81fb951ea554213811aee0#c0e7c1ef945a7dd61c81fb951ea554213811aee0"
+version = "0.20.0"
+source = "git+https://github.com/gfx-rs/wgpu?rev=4a19ac279c4f81aacedb1d215c884c10fe115275#4a19ac279c4f81aacedb1d215c884c10fe115275"
 dependencies = [
  "arrayvec",
  "cfg_aliases",
@@ -801,8 +800,8 @@ dependencies = [
 
 [[package]]
 name = "wgpu-core"
-version = "22.0.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=c0e7c1ef945a7dd61c81fb951ea554213811aee0#c0e7c1ef945a7dd61c81fb951ea554213811aee0"
+version = "0.20.0"
+source = "git+https://github.com/gfx-rs/wgpu?rev=4a19ac279c4f81aacedb1d215c884c10fe115275#4a19ac279c4f81aacedb1d215c884c10fe115275"
 dependencies = [
  "arrayvec",
  "bit-vec",
@@ -825,8 +824,8 @@ dependencies = [
 
 [[package]]
 name = "wgpu-hal"
-version = "22.0.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=c0e7c1ef945a7dd61c81fb951ea554213811aee0#c0e7c1ef945a7dd61c81fb951ea554213811aee0"
+version = "0.20.0"
+source = "git+https://github.com/gfx-rs/wgpu?rev=4a19ac279c4f81aacedb1d215c884c10fe115275#4a19ac279c4f81aacedb1d215c884c10fe115275"
 dependencies = [
  "android_system_properties",
  "arrayvec",
@@ -877,8 +876,8 @@ dependencies = [
 
 [[package]]
 name = "wgpu-types"
-version = "22.0.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=c0e7c1ef945a7dd61c81fb951ea554213811aee0#c0e7c1ef945a7dd61c81fb951ea554213811aee0"
+version = "0.20.0"
+source = "git+https://github.com/gfx-rs/wgpu?rev=4a19ac279c4f81aacedb1d215c884c10fe115275#4a19ac279c4f81aacedb1d215c884c10fe115275"
 dependencies = [
  "bitflags 2.6.0",
  "js-sys",
@@ -924,9 +923,9 @@ checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 
 [[package]]
 name = "windows"
-version = "0.58.0"
+version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dd04d41d93c4992d421894c18c8b43496aa748dd4c081bac0dc93eb0489272b6"
+checksum = "e48a53791691ab099e5e2ad123536d0fff50652600abaf43bbf952894110d0be"
 dependencies = [
  "windows-core",
  "windows-targets",
@@ -934,55 +933,10 @@ dependencies = [
 
 [[package]]
 name = "windows-core"
-version = "0.58.0"
+version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ba6d44ec8c2591c134257ce647b7ea6b20335bf6379a27dac5f1641fcf59f99"
+checksum = "33ab640c8d7e35bf8ba19b884ba838ceb4fba93a4e8c65a9059d08afcfc683d9"
 dependencies = [
- "windows-implement",
- "windows-interface",
- "windows-result",
- "windows-strings",
- "windows-targets",
-]
-
-[[package]]
-name = "windows-implement"
-version = "0.58.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2bbd5b46c938e506ecbce286b6628a02171d56153ba733b6c741fc627ec9579b"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.72",
-]
-
-[[package]]
-name = "windows-interface"
-version = "0.58.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "053c4c462dc91d3b1504c6fe5a726dd15e216ba718e84a0e46a88fbe5ded3515"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.72",
-]
-
-[[package]]
-name = "windows-result"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d1043d8214f791817bab27572aaa8af63732e11bf84aa21a45a78d6c317ae0e"
-dependencies = [
- "windows-targets",
-]
-
-[[package]]
-name = "windows-strings"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4cd9b125c486025df0eabcb585e62173c6c9eddcec5d117d3b6e8c30e2ee4d10"
-dependencies = [
- "windows-result",
  "windows-targets",
 ]
 
