@@ -1,16 +1,11 @@
 use std::borrow::Cow;
-use std::collections::HashMap;
 
 use wgpu::{
     BindGroupDescriptor, BindGroupEntry, BindGroupLayoutDescriptor, BindGroupLayoutEntry,
-    BufferBinding, BufferDescriptor, BufferUsages, Color, ColorTargetState, ColorWrites,
-    CommandEncoderDescriptor, ComputePassDescriptor, ComputePipelineDescriptor, DeviceDescriptor,
-    Extent3d, Features, FragmentState, ImageCopyBuffer, Instance, InstanceDescriptor, Limits,
-    MultisampleState, Operations, PipelineCompilationOptions, PipelineLayoutDescriptor,
-    PrimitiveState, RenderPassColorAttachment, RenderPassDescriptor, RenderPipelineDescriptor,
-    RequestAdapterOptions, ShaderModuleDescriptor, ShaderSource, ShaderStages, TextureAspect,
-    TextureDescriptor, TextureDimension, TextureFormat, TextureUsages, TextureViewDescriptor,
-    VertexState,
+    BufferBinding, BufferDescriptor, BufferUsages, CommandEncoderDescriptor, ComputePassDescriptor,
+    ComputePipelineDescriptor, DeviceDescriptor, Instance, InstanceDescriptor,
+    PipelineCompilationOptions, PipelineLayoutDescriptor, RequestAdapterOptions,
+    ShaderModuleDescriptor, ShaderSource, ShaderStages,
 };
 
 fn main() {
