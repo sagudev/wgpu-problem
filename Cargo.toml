@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 pollster = "0.3"
-# good version:
+# last good
 #wgpu = { git = "https://github.com/gfx-rs/wgpu", rev = "42e16c7e7de077f8df8827a1cbf262c45565afef" }
-# bad version (panics):
+# first bad (panics):
 wgpu = { git = "https://github.com/gfx-rs/wgpu", rev = "4a19ac279c4f81aacedb1d215c884c10fe115275" }
