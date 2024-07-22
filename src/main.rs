@@ -35,7 +35,7 @@ async fn run() {
         )
         .await
         .unwrap();
-    device.on_uncaptured_error(Box::new(|err| println!("ERROR: {err:?}")));
+    device.on_uncaptured_error(Box::new(|err| println!("ERROR: {err:#?}")));
 
     let buffer61 = device.create_buffer(&BufferDescriptor {
         label: None,
