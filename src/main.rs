@@ -2,10 +2,14 @@ use std::borrow::Cow;
 
 use wgpu::{
     BindGroupDescriptor, BindGroupEntry, BindGroupLayoutDescriptor, BindGroupLayoutEntry,
-    BufferBinding, BufferDescriptor, BufferUsages, CommandEncoderDescriptor, ComputePassDescriptor,
-    ComputePipelineDescriptor, DeviceDescriptor, Instance, InstanceDescriptor,
-    PipelineCompilationOptions, PipelineLayoutDescriptor, RequestAdapterOptions,
-    ShaderModuleDescriptor, ShaderSource, ShaderStages,
+    BufferBinding, BufferDescriptor, BufferUsages, Color, ColorTargetState, ColorWrites,
+    CommandEncoderDescriptor, ComputePassDescriptor, ComputePipelineDescriptor, DeviceDescriptor,
+    Extent3d, FragmentState, FrontFace, Instance, InstanceDescriptor, MultisampleState, Operations,
+    PipelineCompilationOptions, PipelineLayout, PipelineLayoutDescriptor, PolygonMode,
+    PrimitiveState, PrimitiveTopology, RenderPassColorAttachment, RenderPassDescriptor,
+    RenderPipeline, RenderPipelineDescriptor, RequestAdapterOptions, ShaderModule,
+    ShaderModuleDescriptor, ShaderSource, ShaderStages, TextureDescriptor, TextureFormat,
+    TextureUsages, TextureViewDescriptor, VertexState,
 };
 
 fn main() {
@@ -37,156 +41,189 @@ async fn run() {
         .unwrap();
     device.on_uncaptured_error(Box::new(|err| println!("ERROR: {err:#?}")));
 
-    let buffer61 = device.create_buffer(&BufferDescriptor {
+    let bind_group_layout_01 = device.create_bind_group_layout(&BindGroupLayoutDescriptor {
         label: None,
-        size: 1024,
-        usage: BufferUsages::UNIFORM,
-        mapped_at_creation: false,
+        entries: &[],
     });
-    let buffer71 = device.create_buffer(&BufferDescriptor {
+    let bind_group_layout_11 = device.create_bind_group_layout(&BindGroupLayoutDescriptor {
         label: None,
-        size: 1024,
-        usage: BufferUsages::UNIFORM,
-        mapped_at_creation: false,
+        entries: &[BindGroupLayoutEntry {
+            binding: 0,
+            visibility: ShaderStages::VERTEX,
+            ty: wgpu::BindingType::Buffer {
+                ty: wgpu::BufferBindingType::Uniform,
+                has_dynamic_offset: false,
+                min_binding_size: None,
+            },
+            count: None,
+        }],
     });
-    let buffer81 = device.create_buffer(&BufferDescriptor {
+    let pipeline_layout_01 = device.create_pipeline_layout(&PipelineLayoutDescriptor {
         label: None,
-        size: 1024,
-        usage: BufferUsages::UNIFORM,
-        mapped_at_creation: false,
-    });
-    let bind_group_layout_41 = device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-        label: None,
-        entries: &[
-            BindGroupLayoutEntry {
-                binding: 0,
-                visibility: ShaderStages::COMPUTE,
-                ty: wgpu::BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Uniform,
-                    has_dynamic_offset: false,
-                    min_binding_size: None,
-                },
-                count: None,
-            },
-            BindGroupLayoutEntry {
-                binding: 1,
-                visibility: ShaderStages::COMPUTE,
-                ty: wgpu::BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Uniform,
-                    has_dynamic_offset: false,
-                    min_binding_size: None,
-                },
-                count: None,
-            },
-            BindGroupLayoutEntry {
-                binding: 2,
-                visibility: ShaderStages::COMPUTE,
-                ty: wgpu::BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Uniform,
-                    has_dynamic_offset: false,
-                    min_binding_size: None,
-                },
-                count: None,
-            },
+        bind_group_layouts: &[
+            &bind_group_layout_01,
+            &bind_group_layout_01,
+            &bind_group_layout_11,
+            &bind_group_layout_11,
         ],
-    });
-    let bind_group21 = device.create_bind_group(&BindGroupDescriptor {
-        label: None,
-        layout: &bind_group_layout_41,
-        entries: &[
-            BindGroupEntry {
-                binding: 0,
-                resource: wgpu::BindingResource::Buffer(BufferBinding {
-                    buffer: &buffer61,
-                    offset: 0,
-                    size: None,
-                }),
-            },
-            BindGroupEntry {
-                binding: 1,
-                resource: wgpu::BindingResource::Buffer(BufferBinding {
-                    buffer: &buffer71,
-                    offset: 0,
-                    size: None,
-                }),
-            },
-            BindGroupEntry {
-                binding: 2,
-                resource: wgpu::BindingResource::Buffer(BufferBinding {
-                    buffer: &buffer81,
-                    offset: 0,
-                    size: None,
-                }),
-            },
-        ],
-    });
-    let shader21 = device.create_shader_module(ShaderModuleDescriptor {
-        label: None,
-        source: ShaderSource::Wgsl(Cow::Borrowed(
-            "
-        @compute @workgroup_size(1)
-        fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
-        }",
-        )),
-    });
-    let bind_group_layout_51 = device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-        label: None,
-        entries: &[
-            BindGroupLayoutEntry {
-                binding: 0,
-                visibility: ShaderStages::COMPUTE,
-                ty: wgpu::BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Uniform,
-                    has_dynamic_offset: false,
-                    min_binding_size: None,
-                },
-                count: None,
-            },
-            BindGroupLayoutEntry {
-                binding: 1,
-                visibility: ShaderStages::COMPUTE,
-                ty: wgpu::BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Uniform,
-                    has_dynamic_offset: false,
-                    min_binding_size: None,
-                },
-                count: None,
-            },
-            BindGroupLayoutEntry {
-                binding: 3,
-                visibility: ShaderStages::COMPUTE,
-                ty: wgpu::BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Uniform,
-                    has_dynamic_offset: false,
-                    min_binding_size: None,
-                },
-                count: None,
-            },
-        ],
-    });
-    let pipeline_layout21 = device.create_pipeline_layout(&PipelineLayoutDescriptor {
-        label: None,
-        bind_group_layouts: &[&bind_group_layout_51],
         push_constant_ranges: &[],
     });
-    let pipeline21 = device.create_compute_pipeline(&ComputePipelineDescriptor {
+    let (shader_01, shader_11, render_pipeline_01) = fun_name(&device, None);
+    let (shader_21, shader_31, render_pipeline_11) = fun_name(&device, None);
+    let (shader_41, shader_51, render_pipeline_21) = fun_name(&device, Some(&pipeline_layout_01));
+
+    let buffer01 = device.create_buffer(&BufferDescriptor {
         label: None,
-        layout: Some(&pipeline_layout21),
-        module: &shader21,
-        entry_point: "main",
-        compilation_options: PipelineCompilationOptions::default(),
-        cache: None,
+        size: 16,
+        usage: BufferUsages::UNIFORM,
+        mapped_at_creation: false,
     });
-    // ...
-    let mut cmd_enc51 = device.create_command_encoder(&CommandEncoderDescriptor { label: None });
+
+    // Id(2,1,vk), Id(3,1,vk), Id(4,1,vk), Id(5,1,vk)]
+    let bind_group_layout_21 = render_pipeline_01.get_bind_group_layout(0);
+    let bind_group_layout_31 = render_pipeline_01.get_bind_group_layout(1);
+    let bind_group_layout_41 = render_pipeline_01.get_bind_group_layout(2);
+    let bind_group_layout_51 = render_pipeline_01.get_bind_group_layout(3);
+
+    let bind_group_01 = device.create_bind_group(&BindGroupDescriptor {
+        label: None,
+        layout: &bind_group_layout_21,
+        entries: &[],
+    });
+    let bind_group_11 = device.create_bind_group(&BindGroupDescriptor {
+        label: None,
+        layout: &bind_group_layout_31,
+        entries: &[],
+    });
+
+    let bind_group_21 = device.create_bind_group(&BindGroupDescriptor {
+        label: None,
+        layout: &bind_group_layout_51,
+        entries: &[BindGroupEntry {
+            binding: 0,
+            resource: wgpu::BindingResource::Buffer(BufferBinding {
+                buffer: &buffer01,
+                offset: 0,
+                size: None,
+            }),
+        }],
+    });
+    let bind_group_31 = device.create_bind_group(&BindGroupDescriptor {
+        label: None,
+        layout: &bind_group_layout_41,
+        entries: &[BindGroupEntry {
+            binding: 0,
+            resource: wgpu::BindingResource::Buffer(BufferBinding {
+                buffer: &buffer01,
+                offset: 0,
+                size: None,
+            }),
+        }],
+    });
+
+    let mut cmd_enc01 = device.create_command_encoder(&CommandEncoderDescriptor { label: None });
+    let tex = device.create_texture(&TextureDescriptor {
+        label: None,
+        size: Extent3d {
+            width: 16,
+            height: 16,
+            depth_or_array_layers: 1,
+        },
+        mip_level_count: 1,
+        sample_count: 1,
+        dimension: wgpu::TextureDimension::D2,
+        format: TextureFormat::Rgba8Unorm,
+        usage: TextureUsages::RENDER_ATTACHMENT,
+        view_formats: &[],
+    });
+    let tex_view = tex.create_view(&TextureViewDescriptor {
+        label: None,
+        format: None,
+        dimension: None,
+        aspect: wgpu::TextureAspect::All,
+        base_mip_level: 0,
+        mip_level_count: None,
+        base_array_layer: 0,
+        array_layer_count: None,
+    });
     {
-        let mut pass51 = cmd_enc51.begin_compute_pass(&ComputePassDescriptor {
+        let mut pass = cmd_enc01.begin_render_pass(&RenderPassDescriptor {
             label: None,
             timestamp_writes: None,
+            color_attachments: &[Some(RenderPassColorAttachment {
+                view: &tex_view,
+                resolve_target: None,
+                ops: Operations {
+                    load: wgpu::LoadOp::Clear(Color::TRANSPARENT),
+                    store: wgpu::StoreOp::Store,
+                },
+            })],
+            depth_stencil_attachment: None,
+            occlusion_query_set: None,
         });
-        pass51.set_pipeline(&pipeline21);
-        pass51.set_bind_group(0, &bind_group21, &[]);
-        pass51.dispatch_workgroups(0, 1, 1);
+        pass.set_pipeline(&render_pipeline_01);
+        pass.set_bind_group(0, &bind_group_01, &[]);
+        pass.set_bind_group(0, &bind_group_11, &[]);
+        pass.set_bind_group(0, &bind_group_21, &[]);
+        pass.set_bind_group(0, &bind_group_31, &[]);
+        pass.draw(0..0, 0..1);
     } // pass end
     println!("End")
+}
+
+fn fun_name(
+    device: &wgpu::Device,
+    layout: Option<&wgpu::PipelineLayout>,
+) -> (ShaderModule, ShaderModule, RenderPipeline) {
+    let shader1 = device.create_shader_module(ShaderModuleDescriptor {
+        label: None,
+        source: ShaderSource::Wgsl(Cow::Borrowed(
+            "@group(2) @binding(0) var<uniform> u1: vec4f;
+            @group(3) @binding(0) var<uniform> u2: vec4f;
+            @vertex fn main() -> @builtin(position) vec4f { return u1 + u2; }
+            ",
+        )),
+    });
+    let shader2 = device.create_shader_module(ShaderModuleDescriptor {
+        label: None,
+        source: ShaderSource::Wgsl(Cow::Borrowed("@fragment fn main() {}")),
+    });
+    let render_pipeline = device.create_render_pipeline(&RenderPipelineDescriptor {
+        label: None,
+        layout,
+        vertex: VertexState {
+            module: &shader1,
+            entry_point: "main",
+            compilation_options: PipelineCompilationOptions::default(),
+            buffers: &[],
+        },
+        primitive: PrimitiveState {
+            topology: PrimitiveTopology::TriangleList,
+            strip_index_format: None,
+            front_face: FrontFace::Ccw,
+            cull_mode: None,
+            unclipped_depth: false,
+            polygon_mode: PolygonMode::Fill,
+            conservative: false,
+        },
+        depth_stencil: None,
+        multisample: MultisampleState {
+            count: 1,
+            mask: 4294967295,
+            alpha_to_coverage_enabled: false,
+        },
+        fragment: Some(FragmentState {
+            module: &shader2,
+            entry_point: "main",
+            compilation_options: PipelineCompilationOptions::default(),
+            targets: &[Some(ColorTargetState {
+                format: TextureFormat::Rgba8Unorm,
+                blend: None,
+                write_mask: ColorWrites::empty(),
+            })],
+        }),
+        multiview: None,
+        cache: None,
+    });
+    (shader1, shader2, render_pipeline)
 }
