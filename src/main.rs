@@ -20,11 +20,11 @@ use wgpu_core::pipeline::{
 use wgpu_core::resource::TextureDescriptor;
 use wgpu_types::Backend::Vulkan;
 use wgpu_types::{
-    BindGroupLayoutEntry, BindingType, BufferBindingType, BufferDescriptor, BufferUsages, Color,
-    ColorTargetState, ColorWrites, CommandEncoderDescriptor, DeviceDescriptor, Extent3d, FrontFace,
-    ImageSubresourceRange, InstanceDescriptor, MultisampleState, PolygonMode, PowerPreference,
-    PrimitiveState, PrimitiveTopology, RequestAdapterOptions, ShaderBoundChecks, ShaderStages,
-    TextureAspect, TextureDimension, TextureFormat, TextureUsages,
+    Backends, BindGroupLayoutEntry, BindingType, BufferBindingType, BufferDescriptor, BufferUsages,
+    Color, ColorTargetState, ColorWrites, CommandEncoderDescriptor, DeviceDescriptor, Extent3d,
+    FrontFace, ImageSubresourceRange, InstanceDescriptor, MultisampleState, PolygonMode,
+    PowerPreference, PrimitiveState, PrimitiveTopology, RequestAdapterOptions, ShaderBoundChecks,
+    ShaderStages, TextureAspect, TextureDimension, TextureFormat, TextureUsages,
 };
 
 fn main() {
@@ -38,8 +38,8 @@ use wgpu_core::id::markers::{
 };
 use wgpu_core::id::{
     AdapterId, BindGroupId, BindGroupLayoutId, BufferId, CommandEncoderId, ComputePipelineId,
-    DeviceId, PipelineLayoutId, RenderBundleId, RenderPipelineId, SamplerId, ShaderModuleId,
-    TextureId, TextureViewId,
+    DeviceId, Id, Marker, PipelineLayoutId, RenderBundleId, RenderPipelineId, SamplerId,
+    ShaderModuleId, TextureId, TextureViewId,
 };
 
 use wgpu_core::command::DynRenderPass;
@@ -88,10 +88,15 @@ fn er<E: std::fmt::Debug>(e: Option<E>) {
     }
 }
 
+fn id<T: Marker>(id: Id<T>) -> String {
+    format!("{id:?}")
+}
+
 async fn run() {
     let global = Global::new(
         "lol",
         InstanceDescriptor {
+            backends: Backends::PRIMARY,
             ..Default::default()
         },
     );
@@ -106,6 +111,7 @@ async fn run() {
             AdapterInputs::IdSet(&[hub.adapters.process(Vulkan)]),
         )
         .unwrap();
+    assert_eq!(id(adapter_id), "Id(0,1,vk)");
     let did = hub.devices.process(Vulkan);
     let (device_id, queue_id, error) = global.adapter_request_device::<api::Vulkan>(
         adapter_id,
@@ -118,6 +124,7 @@ async fn run() {
         Some(did.into_queue_id()),
     );
     er(error);
+    assert_eq!(id(device_id), "Id(0,1,vk)");
 
     let (bind_group_layout_01, error) = global.device_create_bind_group_layout::<api::Vulkan>(
         device_id,
@@ -128,6 +135,7 @@ async fn run() {
         Some(hub.bind_group_layouts.process(Vulkan)),
     );
     er(error);
+    assert_eq!(id(bind_group_layout_01), "Id(0,1,vk)");
 
     let (bind_group_layout_11, error) = global.device_create_bind_group_layout::<api::Vulkan>(
         device_id,
@@ -147,6 +155,7 @@ async fn run() {
         Some(hub.bind_group_layouts.process(Vulkan)),
     );
     er(error);
+    assert_eq!(id(bind_group_layout_11), "Id(1,1,vk)");
 
     let (pipeline_layout_01, error) = global.device_create_pipeline_layout::<api::Vulkan>(
         device_id,
@@ -163,12 +172,20 @@ async fn run() {
         Some(hub.pipeline_layouts.process(Vulkan)),
     );
     er(error);
+    assert_eq!(id(pipeline_layout_01), "Id(0,1,vk)");
 
     // Id(2,1,vk), Id(3,1,vk), Id(4,1,vk), Id(5,1,vk)]
     let bind_group_layout_21 = hub.bind_group_layouts.process(Vulkan);
+    assert_eq!(id(bind_group_layout_21), "Id(2,1,vk)");
     let bind_group_layout_31 = hub.bind_group_layouts.process(Vulkan);
+    assert_eq!(id(bind_group_layout_31), "Id(3,1,vk)");
     let bind_group_layout_41 = hub.bind_group_layouts.process(Vulkan);
+    assert_eq!(id(bind_group_layout_41), "Id(4,1,vk)");
     let bind_group_layout_51 = hub.bind_group_layouts.process(Vulkan);
+    assert_eq!(id(bind_group_layout_51), "Id(5,1,vk)");
+
+    let pipeline_layout_11 = hub.pipeline_layouts.process(Vulkan);
+    assert_eq!(id(pipeline_layout_11), "Id(1,1,vk)");
 
     let (shader_01, shader_11, render_pipeline_01) = fun_name(
         device_id,
@@ -176,7 +193,7 @@ async fn run() {
         &hub,
         None,
         Some(ImplicitPipelineIds {
-            root_id: hub.pipeline_layouts.process(Vulkan),
+            root_id: pipeline_layout_11,
             group_ids: &[
                 bind_group_layout_21,
                 bind_group_layout_31,
@@ -185,23 +202,45 @@ async fn run() {
             ],
         }),
     );
+    assert_eq!(id(shader_01), "Id(0,1,vk)");
+    assert_eq!(id(shader_11), "Id(1,1,vk)");
+    assert_eq!(id(render_pipeline_01), "Id(0,1,vk)");
+
+    let bind_group_layout_61 = hub.bind_group_layouts.process(Vulkan);
+    assert_eq!(id(bind_group_layout_61), "Id(6,1,vk)");
+    let bind_group_layout_71 = hub.bind_group_layouts.process(Vulkan);
+    assert_eq!(id(bind_group_layout_71), "Id(7,1,vk)");
+    let bind_group_layout_81 = hub.bind_group_layouts.process(Vulkan);
+    assert_eq!(id(bind_group_layout_81), "Id(8,1,vk)");
+    let bind_group_layout_91 = hub.bind_group_layouts.process(Vulkan);
+    assert_eq!(id(bind_group_layout_91), "Id(9,1,vk)");
+
+    let pipeline_layout_21 = hub.pipeline_layouts.process(Vulkan);
+    assert_eq!(id(pipeline_layout_21), "Id(2,1,vk)");
+
     let (shader_21, shader_31, render_pipeline_11) = fun_name(
         device_id,
         &global,
         &hub,
         None,
         Some(ImplicitPipelineIds {
-            root_id: hub.pipeline_layouts.process(Vulkan),
+            root_id: pipeline_layout_21,
             group_ids: &[
-                hub.bind_group_layouts.process(Vulkan),
-                hub.bind_group_layouts.process(Vulkan),
-                hub.bind_group_layouts.process(Vulkan),
-                hub.bind_group_layouts.process(Vulkan),
+                bind_group_layout_61,
+                bind_group_layout_71,
+                bind_group_layout_81,
+                bind_group_layout_91,
             ],
         }),
     );
+    assert_eq!(id(shader_21), "Id(2,1,vk)");
+    assert_eq!(id(shader_31), "Id(3,1,vk)");
+    assert_eq!(id(render_pipeline_11), "Id(1,1,vk)");
     let (shader_41, shader_51, render_pipeline_21) =
         fun_name(device_id, &global, &hub, Some(pipeline_layout_01), None);
+    assert_eq!(id(shader_41), "Id(4,1,vk)");
+    assert_eq!(id(shader_51), "Id(5,1,vk)");
+    assert_eq!(id(render_pipeline_21), "Id(2,1,vk)");
 
     let (buffer_id, error) = global.device_create_buffer::<api::Vulkan>(
         device_id,
@@ -213,6 +252,7 @@ async fn run() {
         },
         Some(hub.buffers.process(Vulkan)),
     );
+    assert_eq!(id(buffer_id), "Id(0,1,vk)");
     er(error);
 
     let (bind_group_01, error) = global.device_create_bind_group::<api::Vulkan>(
@@ -224,6 +264,7 @@ async fn run() {
         },
         Some(hub.bind_groups.process(Vulkan)),
     );
+    assert_eq!(id(bind_group_01), "Id(0,1,vk)");
     er(error);
 
     let (bind_group_11, error) = global.device_create_bind_group::<api::Vulkan>(
@@ -235,6 +276,7 @@ async fn run() {
         },
         Some(hub.bind_groups.process(Vulkan)),
     );
+    assert_eq!(id(bind_group_11), "Id(1,1,vk)");
     er(error);
 
     let (bind_group_21, error) = global.device_create_bind_group::<api::Vulkan>(
@@ -253,6 +295,7 @@ async fn run() {
         },
         Some(hub.bind_groups.process(Vulkan)),
     );
+    assert_eq!(id(bind_group_21), "Id(2,1,vk)");
     er(error);
 
     let (bind_group_31, error) = global.device_create_bind_group::<api::Vulkan>(
@@ -271,14 +314,17 @@ async fn run() {
         },
         Some(hub.bind_groups.process(Vulkan)),
     );
+    assert_eq!(id(bind_group_31), "Id(3,1,vk)");
     er(error);
 
-    let (mut cmd_enc01, error) = global.device_create_command_encoder::<api::Vulkan>(
+    let (cmd_enc01, error) = global.device_create_command_encoder::<api::Vulkan>(
         device_id,
         &CommandEncoderDescriptor { label: None },
         Some(hub.command_encoders.process(Vulkan)),
     );
+    assert_eq!(id(cmd_enc01), "Id(0,1,vk)");
     er(error);
+
     let (tex, error) = global.device_create_texture::<api::Vulkan>(
         device_id,
         &TextureDescriptor {
@@ -297,6 +343,7 @@ async fn run() {
         },
         Some(hub.textures.process(Vulkan)),
     );
+    assert_eq!(id(tex), "Id(0,1,vk)");
     er(error);
 
     let (tex_view, error) = global.texture_create_view::<api::Vulkan>(
@@ -313,8 +360,9 @@ async fn run() {
                 array_layer_count: None,
             },
         },
-        None,
+        Some(hub.texture_views.process(Vulkan)),
     );
+    assert_eq!(id(tex_view), "Id(0,1,vk)");
     er(error);
 
     {
@@ -340,9 +388,9 @@ async fn run() {
         er(error);
         pass.set_pipeline(&global, render_pipeline_01).unwrap();
         pass.set_bind_group(&global, 0, bind_group_01, &[]).unwrap();
-        pass.set_bind_group(&global, 0, bind_group_11, &[]).unwrap();
-        pass.set_bind_group(&global, 0, bind_group_21, &[]).unwrap();
-        pass.set_bind_group(&global, 0, bind_group_31, &[]).unwrap();
+        pass.set_bind_group(&global, 1, bind_group_11, &[]).unwrap();
+        pass.set_bind_group(&global, 2, bind_group_21, &[]).unwrap();
+        pass.set_bind_group(&global, 3, bind_group_31, &[]).unwrap();
         pass.draw(&global, 0, 1, 0, 0).unwrap();
         pass.end(&global).unwrap();
     } // pass end
