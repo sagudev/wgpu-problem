@@ -163,9 +163,9 @@ async fn run() {
         });
         pass.set_pipeline(&render_pipeline_01);
         pass.set_bind_group(0, &bind_group_01, &[]);
-        pass.set_bind_group(0, &bind_group_11, &[]);
-        pass.set_bind_group(0, &bind_group_21, &[]);
-        pass.set_bind_group(0, &bind_group_31, &[]);
+        pass.set_bind_group(1, &bind_group_11, &[]);
+        pass.set_bind_group(2, &bind_group_21, &[]);
+        pass.set_bind_group(3, &bind_group_31, &[]);
         pass.draw(0..0, 0..1);
     } // pass end
     println!("End")
