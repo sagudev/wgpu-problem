@@ -1,15 +1,30 @@
-use std::borrow::Cow;
+use std::borrow::Cow::{self, Borrowed};
+use std::collections::HashMap;
 
-use wgpu::{
-    BindGroupDescriptor, BindGroupEntry, BindGroupLayoutDescriptor, BindGroupLayoutEntry,
-    BufferBinding, BufferDescriptor, BufferUsages, Color, ColorTargetState, ColorWrites,
-    CommandEncoderDescriptor, ComputePassDescriptor, ComputePipelineDescriptor, DeviceDescriptor,
-    Extent3d, FragmentState, FrontFace, Instance, InstanceDescriptor, MultisampleState, Operations,
-    PipelineCompilationOptions, PipelineLayout, PipelineLayoutDescriptor, PolygonMode,
-    PrimitiveState, PrimitiveTopology, RenderPassColorAttachment, RenderPassDescriptor,
-    RenderPipeline, RenderPipelineDescriptor, RequestAdapterOptions, ShaderModule,
-    ShaderModuleDescriptor, ShaderSource, ShaderStages, TextureDescriptor, TextureFormat,
-    TextureUsages, TextureViewDescriptor, VertexState,
+use wgpu_core::api;
+use wgpu_core::binding_model::{
+    BindGroupDescriptor, BindGroupEntry, BindGroupLayoutDescriptor, BindingResource, BufferBinding,
+    PipelineLayoutDescriptor,
+};
+use wgpu_core::command::{PassChannel, RenderPassColorAttachment, RenderPassDescriptor, StoreOp};
+use wgpu_core::device::ImplicitPipelineIds;
+use wgpu_core::global::Global;
+use wgpu_core::hal_api::HalApi;
+use wgpu_core::identity::IdentityManager;
+use wgpu_core::instance::{AdapterInputs, Instance};
+use wgpu_core::naga::Module;
+use wgpu_core::pipeline::{
+    FragmentState, ProgrammableStageDescriptor, RenderPipelineDescriptor, ShaderModuleDescriptor,
+    ShaderModuleSource, VertexState,
+};
+use wgpu_core::resource::TextureDescriptor;
+use wgpu_types::Backend::Vulkan;
+use wgpu_types::{
+    BindGroupLayoutEntry, BindingType, BufferBindingType, BufferDescriptor, BufferUsages, Color,
+    ColorTargetState, ColorWrites, CommandEncoderDescriptor, DeviceDescriptor, Extent3d, FrontFace,
+    ImageSubresourceRange, InstanceDescriptor, MultisampleState, PolygonMode, PowerPreference,
+    PrimitiveState, PrimitiveTopology, RequestAdapterOptions, ShaderBoundChecks, ShaderStages,
+    TextureAspect, TextureDimension, TextureFormat, TextureUsages,
 };
 
 fn main() {
@@ -17,213 +32,405 @@ fn main() {
     pollster::block_on(run());
 }
 
+use wgpu_core::id::markers::{
+    Adapter, BindGroup, BindGroupLayout, Buffer, CommandEncoder, ComputePipeline, Device,
+    PipelineLayout, RenderBundle, RenderPipeline, Sampler, ShaderModule, Texture, TextureView,
+};
+use wgpu_core::id::{
+    AdapterId, BindGroupId, BindGroupLayoutId, BufferId, CommandEncoderId, ComputePipelineId,
+    DeviceId, PipelineLayoutId, RenderBundleId, RenderPipelineId, SamplerId, ShaderModuleId,
+    TextureId, TextureViewId,
+};
+
+use wgpu_core::command::DynRenderPass;
+
+pub struct IdentityHub {
+    adapters: IdentityManager<Adapter>,
+    devices: IdentityManager<Device>,
+    buffers: IdentityManager<Buffer>,
+    bind_groups: IdentityManager<BindGroup>,
+    bind_group_layouts: IdentityManager<BindGroupLayout>,
+    compute_pipelines: IdentityManager<ComputePipeline>,
+    pipeline_layouts: IdentityManager<PipelineLayout>,
+    shader_modules: IdentityManager<ShaderModule>,
+    command_encoders: IdentityManager<CommandEncoder>,
+    textures: IdentityManager<Texture>,
+    texture_views: IdentityManager<TextureView>,
+    samplers: IdentityManager<Sampler>,
+    render_pipelines: IdentityManager<RenderPipeline>,
+    render_bundles: IdentityManager<RenderBundle>,
+}
+
+impl IdentityHub {
+    fn new() -> Self {
+        IdentityHub {
+            adapters: IdentityManager::new(),
+            devices: IdentityManager::new(),
+            buffers: IdentityManager::new(),
+            bind_groups: IdentityManager::new(),
+            bind_group_layouts: IdentityManager::new(),
+            compute_pipelines: IdentityManager::new(),
+            pipeline_layouts: IdentityManager::new(),
+            shader_modules: IdentityManager::new(),
+            command_encoders: IdentityManager::new(),
+            textures: IdentityManager::new(),
+            texture_views: IdentityManager::new(),
+            samplers: IdentityManager::new(),
+            render_pipelines: IdentityManager::new(),
+            render_bundles: IdentityManager::new(),
+        }
+    }
+}
+
+fn er<E: std::fmt::Debug>(e: Option<E>) {
+    if let Some(e) = e {
+        panic!("{e:?}");
+    }
+}
+
 async fn run() {
-    let i = Instance::new(InstanceDescriptor {
-        ..Default::default()
-    });
-    let adapter = i
-        .request_adapter(&RequestAdapterOptions {
-            power_preference: wgpu::PowerPreference::None,
-            force_fallback_adapter: false,
-            compatible_surface: None,
-        })
-        .await
-        .unwrap();
-    let (device, queue) = adapter
-        .request_device(
-            &DeviceDescriptor {
-                label: None,
-                ..Default::default()
+    let global = Global::new(
+        "lol",
+        InstanceDescriptor {
+            ..Default::default()
+        },
+    );
+    let hub = IdentityHub::new();
+    let adapter_id = global
+        .request_adapter(
+            &RequestAdapterOptions {
+                power_preference: PowerPreference::None,
+                force_fallback_adapter: false,
+                compatible_surface: None,
             },
-            None,
+            AdapterInputs::IdSet(&[hub.adapters.process(Vulkan)]),
         )
-        .await
         .unwrap();
-    device.on_uncaptured_error(Box::new(|err| println!("ERROR: {err:#?}")));
+    let did = hub.devices.process(Vulkan);
+    let (device_id, queue_id, error) = global.adapter_request_device::<api::Vulkan>(
+        adapter_id,
+        &DeviceDescriptor {
+            label: None,
+            ..Default::default()
+        },
+        None,
+        Some(did),
+        Some(did.into_queue_id()),
+    );
+    er(error);
 
-    let bind_group_layout_01 = device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-        label: None,
-        entries: &[],
-    });
-    let bind_group_layout_11 = device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-        label: None,
-        entries: &[BindGroupLayoutEntry {
-            binding: 0,
-            visibility: ShaderStages::VERTEX,
-            ty: wgpu::BindingType::Buffer {
-                ty: wgpu::BufferBindingType::Uniform,
-                has_dynamic_offset: false,
-                min_binding_size: None,
-            },
-            count: None,
-        }],
-    });
-    let pipeline_layout_01 = device.create_pipeline_layout(&PipelineLayoutDescriptor {
-        label: None,
-        bind_group_layouts: &[
-            &bind_group_layout_01,
-            &bind_group_layout_01,
-            &bind_group_layout_11,
-            &bind_group_layout_11,
-        ],
-        push_constant_ranges: &[],
-    });
-    let (shader_01, shader_11, render_pipeline_01) = fun_name(&device, None);
-    let (shader_21, shader_31, render_pipeline_11) = fun_name(&device, None);
-    let (shader_41, shader_51, render_pipeline_21) = fun_name(&device, Some(&pipeline_layout_01));
+    let (bind_group_layout_01, error) = global.device_create_bind_group_layout::<api::Vulkan>(
+        device_id,
+        &BindGroupLayoutDescriptor {
+            label: None,
+            entries: Cow::Borrowed(&[]),
+        },
+        Some(hub.bind_group_layouts.process(Vulkan)),
+    );
+    er(error);
 
-    let buffer01 = device.create_buffer(&BufferDescriptor {
-        label: None,
-        size: 16,
-        usage: BufferUsages::UNIFORM,
-        mapped_at_creation: false,
-    });
+    let (bind_group_layout_11, error) = global.device_create_bind_group_layout::<api::Vulkan>(
+        device_id,
+        &BindGroupLayoutDescriptor {
+            label: None,
+            entries: Borrowed(&[BindGroupLayoutEntry {
+                binding: 0,
+                visibility: ShaderStages::VERTEX,
+                ty: BindingType::Buffer {
+                    ty: BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            }]),
+        },
+        Some(hub.bind_group_layouts.process(Vulkan)),
+    );
+    er(error);
+
+    let (pipeline_layout_01, error) = global.device_create_pipeline_layout::<api::Vulkan>(
+        device_id,
+        &PipelineLayoutDescriptor {
+            label: None,
+            bind_group_layouts: Borrowed(&[
+                bind_group_layout_01,
+                bind_group_layout_01,
+                bind_group_layout_11,
+                bind_group_layout_11,
+            ]),
+            push_constant_ranges: Borrowed(&[]),
+        },
+        Some(hub.pipeline_layouts.process(Vulkan)),
+    );
+    er(error);
 
     // Id(2,1,vk), Id(3,1,vk), Id(4,1,vk), Id(5,1,vk)]
-    let bind_group_layout_21 = render_pipeline_01.get_bind_group_layout(0);
-    let bind_group_layout_31 = render_pipeline_01.get_bind_group_layout(1);
-    let bind_group_layout_41 = render_pipeline_01.get_bind_group_layout(2);
-    let bind_group_layout_51 = render_pipeline_01.get_bind_group_layout(3);
+    let bind_group_layout_21 = hub.bind_group_layouts.process(Vulkan);
+    let bind_group_layout_31 = hub.bind_group_layouts.process(Vulkan);
+    let bind_group_layout_41 = hub.bind_group_layouts.process(Vulkan);
+    let bind_group_layout_51 = hub.bind_group_layouts.process(Vulkan);
 
-    let bind_group_01 = device.create_bind_group(&BindGroupDescriptor {
-        label: None,
-        layout: &bind_group_layout_21,
-        entries: &[],
-    });
-    let bind_group_11 = device.create_bind_group(&BindGroupDescriptor {
-        label: None,
-        layout: &bind_group_layout_31,
-        entries: &[],
-    });
+    let (shader_01, shader_11, render_pipeline_01) = fun_name(
+        device_id,
+        &global,
+        &hub,
+        None,
+        Some(ImplicitPipelineIds {
+            root_id: hub.pipeline_layouts.process(Vulkan),
+            group_ids: &[
+                bind_group_layout_21,
+                bind_group_layout_31,
+                bind_group_layout_41,
+                bind_group_layout_51,
+            ],
+        }),
+    );
+    let (shader_21, shader_31, render_pipeline_11) = fun_name(
+        device_id,
+        &global,
+        &hub,
+        None,
+        Some(ImplicitPipelineIds {
+            root_id: hub.pipeline_layouts.process(Vulkan),
+            group_ids: &[
+                hub.bind_group_layouts.process(Vulkan),
+                hub.bind_group_layouts.process(Vulkan),
+                hub.bind_group_layouts.process(Vulkan),
+                hub.bind_group_layouts.process(Vulkan),
+            ],
+        }),
+    );
+    let (shader_41, shader_51, render_pipeline_21) =
+        fun_name(device_id, &global, &hub, Some(pipeline_layout_01), None);
 
-    let bind_group_21 = device.create_bind_group(&BindGroupDescriptor {
-        label: None,
-        layout: &bind_group_layout_51,
-        entries: &[BindGroupEntry {
-            binding: 0,
-            resource: wgpu::BindingResource::Buffer(BufferBinding {
-                buffer: &buffer01,
-                offset: 0,
-                size: None,
-            }),
-        }],
-    });
-    let bind_group_31 = device.create_bind_group(&BindGroupDescriptor {
-        label: None,
-        layout: &bind_group_layout_41,
-        entries: &[BindGroupEntry {
-            binding: 0,
-            resource: wgpu::BindingResource::Buffer(BufferBinding {
-                buffer: &buffer01,
-                offset: 0,
-                size: None,
-            }),
-        }],
-    });
-
-    let mut cmd_enc01 = device.create_command_encoder(&CommandEncoderDescriptor { label: None });
-    let tex = device.create_texture(&TextureDescriptor {
-        label: None,
-        size: Extent3d {
-            width: 16,
-            height: 16,
-            depth_or_array_layers: 1,
-        },
-        mip_level_count: 1,
-        sample_count: 1,
-        dimension: wgpu::TextureDimension::D2,
-        format: TextureFormat::Rgba8Unorm,
-        usage: TextureUsages::RENDER_ATTACHMENT,
-        view_formats: &[],
-    });
-    let tex_view = tex.create_view(&TextureViewDescriptor {
-        label: None,
-        format: None,
-        dimension: None,
-        aspect: wgpu::TextureAspect::All,
-        base_mip_level: 0,
-        mip_level_count: None,
-        base_array_layer: 0,
-        array_layer_count: None,
-    });
-    {
-        let mut pass = cmd_enc01.begin_render_pass(&RenderPassDescriptor {
+    let (buffer_id, error) = global.device_create_buffer::<api::Vulkan>(
+        device_id,
+        &BufferDescriptor {
             label: None,
-            timestamp_writes: None,
-            color_attachments: &[Some(RenderPassColorAttachment {
-                view: &tex_view,
-                resolve_target: None,
-                ops: Operations {
-                    load: wgpu::LoadOp::Clear(Color::TRANSPARENT),
-                    store: wgpu::StoreOp::Store,
-                },
-            })],
-            depth_stencil_attachment: None,
-            occlusion_query_set: None,
-        });
-        pass.set_pipeline(&render_pipeline_01);
-        pass.set_bind_group(0, &bind_group_01, &[]);
-        pass.set_bind_group(0, &bind_group_11, &[]);
-        pass.set_bind_group(0, &bind_group_21, &[]);
-        pass.set_bind_group(0, &bind_group_31, &[]);
-        pass.draw(0..0, 0..1);
+            size: 16,
+            usage: BufferUsages::UNIFORM,
+            mapped_at_creation: false,
+        },
+        Some(hub.buffers.process(Vulkan)),
+    );
+    er(error);
+
+    let (bind_group_01, error) = global.device_create_bind_group::<api::Vulkan>(
+        device_id,
+        &BindGroupDescriptor {
+            label: None,
+            layout: bind_group_layout_21,
+            entries: Borrowed(&[]),
+        },
+        Some(hub.bind_groups.process(Vulkan)),
+    );
+    er(error);
+
+    let (bind_group_11, error) = global.device_create_bind_group::<api::Vulkan>(
+        device_id,
+        &BindGroupDescriptor {
+            label: None,
+            layout: bind_group_layout_31,
+            entries: Borrowed(&[]),
+        },
+        Some(hub.bind_groups.process(Vulkan)),
+    );
+    er(error);
+
+    let (bind_group_21, error) = global.device_create_bind_group::<api::Vulkan>(
+        device_id,
+        &BindGroupDescriptor {
+            label: None,
+            layout: bind_group_layout_51,
+            entries: Borrowed(&[BindGroupEntry {
+                binding: 0,
+                resource: BindingResource::Buffer(BufferBinding {
+                    buffer_id,
+                    offset: 0,
+                    size: None,
+                }),
+            }]),
+        },
+        Some(hub.bind_groups.process(Vulkan)),
+    );
+    er(error);
+
+    let (bind_group_31, error) = global.device_create_bind_group::<api::Vulkan>(
+        device_id,
+        &BindGroupDescriptor {
+            label: None,
+            layout: bind_group_layout_41,
+            entries: Borrowed(&[BindGroupEntry {
+                binding: 0,
+                resource: BindingResource::Buffer(BufferBinding {
+                    buffer_id,
+                    offset: 0,
+                    size: None,
+                }),
+            }]),
+        },
+        Some(hub.bind_groups.process(Vulkan)),
+    );
+    er(error);
+
+    let (mut cmd_enc01, error) = global.device_create_command_encoder::<api::Vulkan>(
+        device_id,
+        &CommandEncoderDescriptor { label: None },
+        Some(hub.command_encoders.process(Vulkan)),
+    );
+    er(error);
+    let (tex, error) = global.device_create_texture::<api::Vulkan>(
+        device_id,
+        &TextureDescriptor {
+            label: None,
+            size: Extent3d {
+                width: 16,
+                height: 16,
+                depth_or_array_layers: 1,
+            },
+            mip_level_count: 1,
+            sample_count: 1,
+            dimension: TextureDimension::D2,
+            format: TextureFormat::Rgba8Unorm,
+            usage: TextureUsages::RENDER_ATTACHMENT,
+            view_formats: Vec::new(),
+        },
+        Some(hub.textures.process(Vulkan)),
+    );
+    er(error);
+
+    let (tex_view, error) = global.texture_create_view::<api::Vulkan>(
+        tex,
+        &wgpu_core::resource::TextureViewDescriptor {
+            label: None,
+            format: None,
+            dimension: None,
+            range: ImageSubresourceRange {
+                aspect: TextureAspect::All,
+                base_mip_level: 0,
+                mip_level_count: None,
+                base_array_layer: 0,
+                array_layer_count: None,
+            },
+        },
+        None,
+    );
+    er(error);
+
+    {
+        let (mut pass, error) = global.command_encoder_create_render_pass::<api::Vulkan>(
+            cmd_enc01,
+            &RenderPassDescriptor {
+                label: None,
+                timestamp_writes: None,
+                color_attachments: Borrowed(&[Some(RenderPassColorAttachment {
+                    view: tex_view,
+                    resolve_target: None,
+                    channel: PassChannel {
+                        load_op: wgpu_core::command::LoadOp::Clear,
+                        store_op: wgpu_core::command::StoreOp::Store,
+                        clear_value: Color::TRANSPARENT,
+                        read_only: false,
+                    },
+                })]),
+                depth_stencil_attachment: None,
+                occlusion_query_set: None,
+            },
+        );
+        er(error);
+        pass.set_pipeline(&global, render_pipeline_01).unwrap();
+        pass.set_bind_group(&global, 0, bind_group_01, &[]).unwrap();
+        pass.set_bind_group(&global, 0, bind_group_11, &[]).unwrap();
+        pass.set_bind_group(&global, 0, bind_group_21, &[]).unwrap();
+        pass.set_bind_group(&global, 0, bind_group_31, &[]).unwrap();
+        pass.draw(&global, 0, 1, 0, 0).unwrap();
+        pass.end(&global).unwrap();
     } // pass end
     println!("End")
 }
 
 fn fun_name(
-    device: &wgpu::Device,
-    layout: Option<&wgpu::PipelineLayout>,
-) -> (ShaderModule, ShaderModule, RenderPipeline) {
-    let shader1 = device.create_shader_module(ShaderModuleDescriptor {
-        label: None,
-        source: ShaderSource::Wgsl(Cow::Borrowed(
+    device_id: DeviceId,
+    global: &Global,
+    hub: &IdentityHub,
+    layout: Option<PipelineLayoutId>,
+    implicit_pipeline_ids: Option<wgpu_core::device::ImplicitPipelineIds>,
+) -> (ShaderModuleId, ShaderModuleId, RenderPipelineId) {
+    let (shader1, error) = global.device_create_shader_module::<api::Vulkan>(
+        device_id,
+        &ShaderModuleDescriptor {
+            label: None,
+            shader_bound_checks: ShaderBoundChecks::default(),
+        },
+        ShaderModuleSource::Wgsl(Borrowed(
             "@group(2) @binding(0) var<uniform> u1: vec4f;
-            @group(3) @binding(0) var<uniform> u2: vec4f;
-            @vertex fn main() -> @builtin(position) vec4f { return u1 + u2; }
-            ",
+        @group(3) @binding(0) var<uniform> u2: vec4f;
+        @vertex fn main() -> @builtin(position) vec4f { return u1 + u2; }
+        ",
         )),
-    });
-    let shader2 = device.create_shader_module(ShaderModuleDescriptor {
-        label: None,
-        source: ShaderSource::Wgsl(Cow::Borrowed("@fragment fn main() {}")),
-    });
-    let render_pipeline = device.create_render_pipeline(&RenderPipelineDescriptor {
-        label: None,
-        layout,
-        vertex: VertexState {
-            module: &shader1,
-            entry_point: "main",
-            compilation_options: PipelineCompilationOptions::default(),
-            buffers: &[],
+        Some(hub.shader_modules.process(Vulkan)),
+    );
+    er(error);
+
+    let (shader2, error) = global.device_create_shader_module::<api::Vulkan>(
+        device_id,
+        &ShaderModuleDescriptor {
+            label: None,
+            shader_bound_checks: ShaderBoundChecks::default(),
         },
-        primitive: PrimitiveState {
-            topology: PrimitiveTopology::TriangleList,
-            strip_index_format: None,
-            front_face: FrontFace::Ccw,
-            cull_mode: None,
-            unclipped_depth: false,
-            polygon_mode: PolygonMode::Fill,
-            conservative: false,
+        ShaderModuleSource::Wgsl(Borrowed("@fragment fn main() {}")),
+        Some(hub.shader_modules.process(Vulkan)),
+    );
+    er(error);
+
+    let (render_pipeline, error) = global.device_create_render_pipeline::<api::Vulkan>(
+        device_id,
+        &RenderPipelineDescriptor {
+            label: None,
+            layout,
+            vertex: VertexState {
+                stage: ProgrammableStageDescriptor {
+                    module: shader1,
+                    entry_point: Some(Cow::Borrowed("main")),
+                    constants: Cow::Owned(HashMap::new()),
+                    zero_initialize_workgroup_memory: false,
+                },
+                buffers: Borrowed(&[]),
+            },
+            primitive: PrimitiveState {
+                topology: PrimitiveTopology::TriangleList,
+                strip_index_format: None,
+                front_face: FrontFace::Ccw,
+                cull_mode: None,
+                unclipped_depth: false,
+                polygon_mode: PolygonMode::Fill,
+                conservative: false,
+            },
+            depth_stencil: None,
+            multisample: MultisampleState {
+                count: 1,
+                mask: 4294967295,
+                alpha_to_coverage_enabled: false,
+            },
+            fragment: Some(FragmentState {
+                targets: Borrowed(&[Some(ColorTargetState {
+                    format: TextureFormat::Rgba8Unorm,
+                    blend: None,
+                    write_mask: ColorWrites::empty(),
+                })]),
+                stage: ProgrammableStageDescriptor {
+                    module: shader2,
+                    entry_point: Some(Cow::Borrowed("main")),
+                    constants: Cow::Owned(HashMap::new()),
+                    zero_initialize_workgroup_memory: false,
+                },
+            }),
+            multiview: None,
+            cache: None,
         },
-        depth_stencil: None,
-        multisample: MultisampleState {
-            count: 1,
-            mask: 4294967295,
-            alpha_to_coverage_enabled: false,
-        },
-        fragment: Some(FragmentState {
-            module: &shader2,
-            entry_point: "main",
-            compilation_options: PipelineCompilationOptions::default(),
-            targets: &[Some(ColorTargetState {
-                format: TextureFormat::Rgba8Unorm,
-                blend: None,
-                write_mask: ColorWrites::empty(),
-            })],
-        }),
-        multiview: None,
-        cache: None,
-    });
+        Some(hub.render_pipelines.process(Vulkan)),
+        implicit_pipeline_ids,
+    );
+    er(error);
     (shader1, shader2, render_pipeline)
 }
