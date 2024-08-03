@@ -371,16 +371,107 @@ async fn run() {
             &RenderPassDescriptor {
                 label: None,
                 timestamp_writes: None,
-                color_attachments: Borrowed(&[Some(RenderPassColorAttachment {
-                    view: tex_view,
-                    resolve_target: None,
-                    channel: PassChannel {
-                        load_op: wgpu_core::command::LoadOp::Clear,
-                        store_op: wgpu_core::command::StoreOp::Store,
-                        clear_value: Color::TRANSPARENT,
-                        read_only: false,
-                    },
-                })]),
+                color_attachments: Borrowed(&[
+                    // 1.
+                    Some(RenderPassColorAttachment {
+                        view: tex_view,
+                        resolve_target: None,
+                        channel: PassChannel {
+                            load_op: wgpu_core::command::LoadOp::Clear,
+                            store_op: wgpu_core::command::StoreOp::Store,
+                            clear_value: Color::TRANSPARENT,
+                            read_only: false,
+                        },
+                    }),
+                    // 2.
+                    Some(RenderPassColorAttachment {
+                        view: tex_view,
+                        resolve_target: None,
+                        channel: PassChannel {
+                            load_op: wgpu_core::command::LoadOp::Clear,
+                            store_op: wgpu_core::command::StoreOp::Store,
+                            clear_value: Color::TRANSPARENT,
+                            read_only: false,
+                        },
+                    }),
+                    // 3.
+                    Some(RenderPassColorAttachment {
+                        view: tex_view,
+                        resolve_target: None,
+                        channel: PassChannel {
+                            load_op: wgpu_core::command::LoadOp::Clear,
+                            store_op: wgpu_core::command::StoreOp::Store,
+                            clear_value: Color::TRANSPARENT,
+                            read_only: false,
+                        },
+                    }),
+                    // 4.
+                    Some(RenderPassColorAttachment {
+                        view: tex_view,
+                        resolve_target: None,
+                        channel: PassChannel {
+                            load_op: wgpu_core::command::LoadOp::Clear,
+                            store_op: wgpu_core::command::StoreOp::Store,
+                            clear_value: Color::TRANSPARENT,
+                            read_only: false,
+                        },
+                    }),
+                    // 5.
+                    Some(RenderPassColorAttachment {
+                        view: tex_view,
+                        resolve_target: None,
+                        channel: PassChannel {
+                            load_op: wgpu_core::command::LoadOp::Clear,
+                            store_op: wgpu_core::command::StoreOp::Store,
+                            clear_value: Color::TRANSPARENT,
+                            read_only: false,
+                        },
+                    }),
+                    // 6.
+                    Some(RenderPassColorAttachment {
+                        view: tex_view,
+                        resolve_target: None,
+                        channel: PassChannel {
+                            load_op: wgpu_core::command::LoadOp::Clear,
+                            store_op: wgpu_core::command::StoreOp::Store,
+                            clear_value: Color::TRANSPARENT,
+                            read_only: false,
+                        },
+                    }),
+                    // 7.
+                    Some(RenderPassColorAttachment {
+                        view: tex_view,
+                        resolve_target: None,
+                        channel: PassChannel {
+                            load_op: wgpu_core::command::LoadOp::Clear,
+                            store_op: wgpu_core::command::StoreOp::Store,
+                            clear_value: Color::TRANSPARENT,
+                            read_only: false,
+                        },
+                    }),
+                    // 8.
+                    Some(RenderPassColorAttachment {
+                        view: tex_view,
+                        resolve_target: None,
+                        channel: PassChannel {
+                            load_op: wgpu_core::command::LoadOp::Clear,
+                            store_op: wgpu_core::command::StoreOp::Store,
+                            clear_value: Color::TRANSPARENT,
+                            read_only: false,
+                        },
+                    }),
+                    // 9.
+                    Some(RenderPassColorAttachment {
+                        view: tex_view,
+                        resolve_target: None,
+                        channel: PassChannel {
+                            load_op: wgpu_core::command::LoadOp::Clear,
+                            store_op: wgpu_core::command::StoreOp::Store,
+                            clear_value: Color::TRANSPARENT,
+                            read_only: false,
+                        },
+                    }),
+                ]),
                 depth_stencil_attachment: None,
                 occlusion_query_set: None,
             },

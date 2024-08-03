@@ -10,8 +10,8 @@ pollster = "0.3"
 # first bad (panics):
 #wgpu = { git = "https://github.com/gfx-rs/wgpu", rev = "4a19ac279c4f81aacedb1d215c884c10fe115275" }
 # Fix in https://github.com/gfx-rs/wgpu/issues/6011:
-wgpu-core = { git = "https://github.com/sagudev/wgpu", branch = "chk-bind", features = [
+wgpu-core = { git = "https://github.com/gfx-rs/wgpu", features = [
     "wgsl",
     "vulkan",
 ] }
-wgpu-types = { git = "https://github.com/sagudev/wgpu", branch = "chk-bind" }
+wgpu-types = { git = "https://github.com/gfx-rs/wgpu" }

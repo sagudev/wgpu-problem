@@ -329,7 +329,7 @@ dependencies = [
 [[package]]
 name = "naga"
 version = "22.0.0"
-source = "git+https://github.com/sagudev/wgpu?branch=chk-bind#8a89e8587c9cc1082f882c248d2479d7eace8187"
+source = "git+https://github.com/gfx-rs/wgpu#7b4cbc26192d6d56a31f8e67769e656a6627b222"
 dependencies = [
  "arrayvec",
  "bit-set",
@@ -599,7 +599,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core"
 version = "22.0.0"
-source = "git+https://github.com/sagudev/wgpu?branch=chk-bind#8a89e8587c9cc1082f882c248d2479d7eace8187"
+source = "git+https://github.com/gfx-rs/wgpu#7b4cbc26192d6d56a31f8e67769e656a6627b222"
 dependencies = [
  "arrayvec",
  "bit-vec",
@@ -622,7 +622,7 @@ dependencies = [
 [[package]]
 name = "wgpu-hal"
 version = "22.0.0"
-source = "git+https://github.com/sagudev/wgpu?branch=chk-bind#8a89e8587c9cc1082f882c248d2479d7eace8187"
+source = "git+https://github.com/gfx-rs/wgpu#7b4cbc26192d6d56a31f8e67769e656a6627b222"
 dependencies = [
  "android_system_properties",
  "arrayvec",
@@ -665,7 +665,7 @@ dependencies = [
 [[package]]
 name = "wgpu-types"
 version = "22.0.0"
-source = "git+https://github.com/sagudev/wgpu?branch=chk-bind#8a89e8587c9cc1082f882c248d2479d7eace8187"
+source = "git+https://github.com/gfx-rs/wgpu#7b4cbc26192d6d56a31f8e67769e656a6627b222"
 dependencies = [
  "bitflags 2.6.0",
  "js-sys",
