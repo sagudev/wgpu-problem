@@ -3,12 +3,13 @@ use std::collections::HashMap;
 
 use wgpu::{
     BindGroupDescriptor, BindGroupEntry, BindGroupLayoutDescriptor, BufferDescriptor, BufferUsages,
-    Color, ColorTargetState, ColorWrites, CommandEncoderDescriptor, DeviceDescriptor, Extent3d,
-    Features, FragmentState, ImageCopyBuffer, Instance, InstanceDescriptor, Limits,
-    MultisampleState, Operations, PipelineCompilationOptions, PipelineLayoutDescriptor,
-    PrimitiveState, RenderPassColorAttachment, RenderPassDescriptor, RenderPipelineDescriptor,
-    RequestAdapterOptions, ShaderModuleDescriptor, ShaderSource, TextureAspect, TextureDescriptor,
-    TextureDimension, TextureFormat, TextureUsages, TextureViewDescriptor, VertexState,
+    Color, ColorTargetState, ColorWrites, CommandEncoderDescriptor, ComputePipelineDescriptor,
+    DeviceDescriptor, Extent3d, Features, FragmentState, ImageCopyBuffer, Instance,
+    InstanceDescriptor, Limits, MultisampleState, Operations, PipelineCompilationOptions,
+    PipelineLayoutDescriptor, PrimitiveState, RenderPassColorAttachment, RenderPassDescriptor,
+    RenderPipelineDescriptor, RequestAdapterOptions, ShaderModuleDescriptor, ShaderSource,
+    TextureAspect, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
+    TextureViewDescriptor, VertexState,
 };
 
 fn main() {
@@ -28,7 +29,7 @@ async fn run() {
         })
         .await
         .unwrap();
-    let (device, queue) = adapter
+    let (device, _queue) = adapter
         .request_device(&DeviceDescriptor::default(), None)
         .await
         .unwrap();
@@ -59,6 +60,22 @@ fn main() -> @location(0) vec4<f32> {
         )),
     });
 
+    let shader21 = device.create_shader_module(ShaderModuleDescriptor {
+        label: None,
+        source: ShaderSource::Wgsl(Cow::Owned(
+            "
+@group(0) @binding(0) var<uniform> binding: f32;
+
+@compute @workgroup_size(1) fn main(
+  @builtin(global_invocation_id) id: vec3<u32>
+) {
+    _ = binding;
+}
+"
+            .to_string(),
+        )),
+    });
+
     // explicit
     #[cfg(feature = "explicit")]
     let explicit_bind_group_layout = device.create_bind_group_layout(&BindGroupLayoutDescriptor {
@@ -70,6 +87,18 @@ fn main() -> @location(0) vec4<f32> {
         label: None,
         bind_group_layouts: &[&explicit_bind_group_layout],
         push_constant_ranges: &[],
+    });
+
+    let compute_pipeline = device.create_compute_pipeline(&ComputePipelineDescriptor {
+        label: None,
+        #[cfg(feature = "explicit")]
+        layout: Some(&pipeline_layout),
+        #[cfg(not(feature = "explicit"))]
+        layout: None, // auto
+        module: &shader21,
+        entry_point: Some("main"),
+        compilation_options: PipelineCompilationOptions::default(),
+        cache: None,
     });
 
     let render_pipeline = device.create_render_pipeline(&RenderPipelineDescriptor {
@@ -121,6 +150,7 @@ fn main() -> @location(0) vec4<f32> {
         multiview: None,
         cache: None,
     });
-    let bind_group_layout = render_pipeline.get_bind_group_layout(0);
-    queue.submit([]);
+
+    compute_pipeline.get_bind_group_layout(0); // panics if not explicitly given layout
+    render_pipeline.get_bind_group_layout(0); // panics if not explicitly given layout
 }
