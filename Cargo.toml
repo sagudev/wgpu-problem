@@ -3,6 +3,9 @@ name = "wgpu-problem"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+explicit = []
+
 [dependencies]
 pollster = "0.3"
 wgpu = { git = "https://github.com/gfx-rs/wgpu" }

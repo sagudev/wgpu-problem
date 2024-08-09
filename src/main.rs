@@ -60,10 +60,12 @@ fn main() -> @location(0) vec4<f32> {
     });
 
     // explicit
+    #[cfg(feature = "explicit")]
     let explicit_bind_group_layout = device.create_bind_group_layout(&BindGroupLayoutDescriptor {
         label: None,
         entries: &[],
     });
+    #[cfg(feature = "explicit")]
     let pipeline_layout = device.create_pipeline_layout(&PipelineLayoutDescriptor {
         label: None,
         bind_group_layouts: &[&explicit_bind_group_layout],
@@ -72,10 +74,10 @@ fn main() -> @location(0) vec4<f32> {
 
     let render_pipeline = device.create_render_pipeline(&RenderPipelineDescriptor {
         label: None,
-        // explicit
-        //layout: Some(&pipeline_layout),
-        // auto
-        layout: None,
+        #[cfg(feature = "explicit")]
+        layout: Some(&pipeline_layout),
+        #[cfg(not(feature = "explicit"))]
+        layout: None, // auto
         vertex: VertexState {
             module: &shader01,
             entry_point: Some("main"),
