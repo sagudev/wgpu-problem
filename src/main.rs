@@ -151,6 +151,6 @@ fn main() -> @location(0) vec4<f32> {
         cache: None,
     });
 
-    compute_pipeline.get_bind_group_layout(0); // panics if not explicitly given layout
-    render_pipeline.get_bind_group_layout(0); // panics if not explicitly given layout
+    compute_pipeline.get_bind_group_layout(0); // errors if not explicitly given layout
+    render_pipeline.get_bind_group_layout(0); // errors if not explicitly given layout
 }
